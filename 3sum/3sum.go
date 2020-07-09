@@ -6,7 +6,6 @@ import (
 )
 
 func threeSum(nums []int) [][]int {
-	missingHashes := make(map[int][][]int)
 	results := make(map[string][]int)
 	var pos []int
 	numCounter := make(map[int]int)
@@ -23,7 +22,7 @@ func threeSum(nums []int) [][]int {
 		} else if v < 2 && i > 0 {
 			pos = append(pos, i)
 			numCounter[i]++
-		} else if v < 3 {
+		} else if v < 3 && i == 0 {
 			numCounter[i]++
 		}
 	}
@@ -33,32 +32,17 @@ func threeSum(nums []int) [][]int {
 
 	for i := range neg {
 		for j := range pos {
-			diff := pos[j] + neg[i]
+			diff := -(pos[j] + neg[i])
 			if numCounter[0] > 0 && diff == 0 {
 				hash := fmt.Sprintf("%d0%d", neg[i], pos[j])
 				results[hash] = []int{neg[i], 0, pos[j]}
 			} else {
-				// is any of the number usable for an erlier created
-				// tuple
-				for idx, element := range [][]int{[]int{neg[i], i}, []int{pos[j], j}} {
-					lists, ok := missingHashes[element[0]]
-					if ok {
-						//remaining := [][]int{}
-						for _, l := range lists {
-							if l[1+2*idx] != element[1] {
-								triplet := []int{l[0], l[2], element[0]}
-								sort.Ints(triplet)
-								hash := fmt.Sprintf("%d%d%d", triplet[0], triplet[1], triplet[2])
-								results[hash] = triplet
-							}
-						}
-					}
-				}
-				l, ok := missingHashes[-diff]
-				if ok {
-					missingHashes[-diff] = append(l, []int{neg[i], i, pos[j], j})
-				} else {
-					missingHashes[-diff] = [][]int{[]int{neg[i], i, pos[j], j}}
+				complementCount := numCounter[diff]
+				if complementCount > 0 && (complementCount == 2 || (diff != neg[i] && diff != pos[j])) {
+					triplet := []int{neg[i], pos[j], diff}
+					sort.Ints(triplet)
+					hash := fmt.Sprintf("%d%d%d", triplet[0], triplet[1], triplet[2])
+					results[hash] = triplet
 				}
 			}
 		}
